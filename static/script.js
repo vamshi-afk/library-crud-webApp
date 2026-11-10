@@ -10,9 +10,23 @@
             <td>${book.title}</td>
             <td>${book.author}</td>
             <td>${book.available_copies} / ${book.total_copies}</td>
+          <td>
+            <button onclick="deleteBook(${book.id})" style ="background: #dc2626"; color :white; border:none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+            </td>
           </tr>
         `;
       });
+    }
+
+    async function deleteBook(id) {
+        const res = await fetch(`/books/${id}`, {method : 'DELETE'})
+
+        if (res.ok) {
+            fetchBooks();
+        } else {
+            const errorData = await res.json();
+            alert(`Error : ${erroData.detail}`);
+        }
     }
 
     document.getElementById('bookForm').addEventListener('submit', async (e) => {
