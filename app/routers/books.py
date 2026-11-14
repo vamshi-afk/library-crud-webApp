@@ -2,22 +2,22 @@ from fastapi import HTTPException, APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from app.schemas import bookBlueprint, bookResponse
+from app.schemas import BookBlueprint, BookResponse
 from app.database import get_db
 from app.models import Book
 
 router = APIRouter(prefix="/books", tags=["Books"])
 
 
-@router.get("/", response_model=list[bookResponse])
+@router.get("/", response_model=list[BookResponse])
 def renderBooks(db: Session = Depends(get_db)):
     stmt = select(Book).order_by(Book.id)
     books = db.scalars(stmt).all()
     return books
 
 
-@router.post("/", response_model=bookResponse, status_code=status.HTTP_201_CREATED)
-def addBooks(book_in: bookBlueprint, db: Session = Depends(get_db)):
+@router.post("/", response_model=BookResponse, status_code=status.HTTP_201_CREATED)
+def addBooks(book_in: BookBlueprint, db: Session = Depends(get_db)):
     new_book = Book(
         title=book_in.title,
         author=book_in.author,

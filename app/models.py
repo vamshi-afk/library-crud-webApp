@@ -1,6 +1,6 @@
 from enum import unique
-
-from sqlalchemy import Integer, String
+from datetime import datetime, timezone
+from sqlalchemy import ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
@@ -16,6 +16,19 @@ class Book(Base):
 
 class Member(Base):
     __tablename__ = "members"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+
+
+class BorrowRecord(Base):
+    __tablename__ = "borrow_records"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), nullable=False)
+    member_id: Mapped[int] = mapped_column(ForeignKey("members.id"), nullable=False)
+    borrowed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    returned_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )

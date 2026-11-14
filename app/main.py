@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.routers import books, members
+from app.routers import books, members, borrow
 from app.database import engine, Base
 from app import models
 
@@ -14,6 +14,7 @@ templates = Jinja2Templates(directory="templates")
 
 app.include_router(books.router)
 app.include_router(members.router)
+app.include_router(borrow.router)
 
 
 @app.get("/")
