@@ -15,7 +15,6 @@ class BookResponse(BaseModel):
     author: str
     total_copies: int
     available_copies: int
-
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -42,3 +41,6 @@ class BorrowResponse(BaseModel):
     member_id: int
     borrowed_at: datetime
     returned_at: datetime | None
+    book: BookResponse
+    member: MemberResponse
+    model_config = ConfigDict(from_attributes=True)

@@ -2,9 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.routers import books, members, borrow
-from app.database import engine, Base
-from app import models
+from app.database import Base, engine
+from app.routers import books, borrow, members
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Library of Arch")

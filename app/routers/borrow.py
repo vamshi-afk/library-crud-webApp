@@ -1,24 +1,29 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
-from app.models import BorrowRecord, Book, Member
-from app.database import get_db
+from sqlalchemy.orm import joinedload
+
+from app.database import DbSession
+from app.models import Book, BorrowRecord, Member
 from app.schemas import BorrowRequest, BorrowResponse
 
 router = APIRouter(prefix="/borrow", tags=["Borrow"])
 
 
 @router.get("/", response_model=list[BorrowResponse])
-def renderBorrowList(db: Session = Depends(get_db)):
-    stmt = select(BorrowRecord).order_by(BorrowRecord.id)
+def renderBorrowList(db: DbSession):
+    stmt = (
+        select(BorrowRecord)
+        .order_by(BorrowRecord.id)
+        .options(joinedload(BorrowRecord.book), joinedload(BorrowRecord.member))
+    )
     borrow_list = db.scalars(stmt).all()
     return borrow_list
 
 
 @router.post("/", response_model=BorrowResponse)
-def borrowBook(req: BorrowRequest, db: Session = Depends(get_db)):
+def borrowBook(req: BorrowRequest, db: DbSession):
     book = db.get(Book, req.book_id)
     member = db.get(Member, req.member_id)
     if not book:
@@ -34,7 +39,7 @@ def borrowBook(req: BorrowRequest, db: Session = Depends(get_db)):
     if book.available_copies == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"No Copies available for borrowing",
+            detail="No Copies available for borrowing",
         )
     borrow_record = db.scalar(
         select(BorrowRecord).where(
@@ -45,7 +50,7 @@ def borrowBook(req: BorrowRequest, db: Session = Depends(get_db)):
     )
     if borrow_record:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Already Borrowed by you"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Already Borrowed by you"
         )
     book.available_copies -= 1
 
@@ -60,7 +65,7 @@ def borrowBook(req: BorrowRequest, db: Session = Depends(get_db)):
 
 
 @router.put("/return/{record_id}", response_model=BorrowResponse)
-def returnBook(record_id: int, db: Session = Depends(get_db)):
+def returnBook(record_id: int, db: DbSession):
     record_check = db.get(BorrowRecord, record_id)
     if not record_check:
         raise HTTPException(
@@ -70,15 +75,15 @@ def returnBook(record_id: int, db: Session = Depends(get_db)):
     if record_check.returned_at:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"The book has already been returned",
+            detail="The book has already been returned",
         )
     book = db.get(Book, record_check.book_id)
     if not book:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"The book doesnt exist"
+            status_code=status.HTTP_404_NOT_FOUND, detail="The book doesnt exist"
         )
     book.available_copies += 1
-    record_check.returned_at = datetime.now(timezone.utc)
+    record_check.returned_at = datetime.now(UTC)
     db.commit()
     db.refresh(record_check)
     return record_check

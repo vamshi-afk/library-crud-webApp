@@ -1,7 +1,8 @@
-from enum import unique
-from datetime import datetime, timezone
-from sqlalchemy import ForeignKey, Integer, String, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from datetime import UTC, datetime
+
+from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.database import Base
 
 
@@ -27,8 +28,10 @@ class BorrowRecord(Base):
     book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), nullable=False)
     member_id: Mapped[int] = mapped_column(ForeignKey("members.id"), nullable=False)
     borrowed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
     returned_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    book: Mapped[Book] = relationship()
+    member: Mapped[Member] = relationship()
