@@ -19,10 +19,10 @@
     }
 
     async function deleteBook(id) {
-        const res = await fetch(`/books/${id}`, {method : 'DELETE'})
+        const res = await fetch(`/books/${id}`, {method : 'DELETE'});
 
         if (res.ok) {
-            fetchBooks();
+            await fetchBooks();
         } else {
             const errorData = await res.json();
             alert(`Error : ${erroData.detail}`);

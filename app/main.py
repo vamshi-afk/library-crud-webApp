@@ -3,7 +3,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.routers import books, members
+from app.database import engine, Base
+from app import models
 
+Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Library of Arch")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
