@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 
 from app.database import DbSession
@@ -10,10 +10,13 @@ router = APIRouter(prefix="/books", tags=["Books"])
 
 
 @router.get("/", response_model=list[BookResponse])
-def renderBooks(db: DbSession):
+def renderBooks(search: str, db: DbSession):
     stmt = select(Book).order_by(Book.id)
-    books = db.scalars(stmt).all()
-    return books
+    if search:
+        stmt = stmt.where(
+            or_(Book.title.ilike(f"%{search}%"), Book.author.ilike(f"%{search}%"))
+        )
+    return db.scalars(stmt).all()
 
 
 @router.post("/", response_model=BookResponse, status_code=status.HTTP_201_CREATED)

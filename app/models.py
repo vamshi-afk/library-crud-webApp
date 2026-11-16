@@ -35,3 +35,5 @@ class BorrowRecord(Base):
     )
     book: Mapped[Book] = relationship()
     member: Mapped[Member] = relationship()
+    due_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    fine: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

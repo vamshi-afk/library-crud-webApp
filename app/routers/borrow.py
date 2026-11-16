@@ -1,4 +1,5 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+import math
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
@@ -57,6 +58,7 @@ def borrowBook(req: BorrowRequest, db: DbSession):
     new_borrow_record = BorrowRecord(
         book_id=req.book_id,
         member_id=req.member_id,
+        due_date=datetime.now(UTC) + timedelta(days=7),
     )
     db.add(new_borrow_record)
     db.commit()
@@ -82,8 +84,13 @@ def returnBook(record_id: int, db: DbSession):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="The book doesnt exist"
         )
+
     book.available_copies += 1
-    record_check.returned_at = datetime.now(UTC)
+    now = datetime.now(UTC)
+    record_check.returned_at = now
+    if now > record_check.due_date:
+        overdue = math.ceil((now - record_check.due_date).total_seconds() / 86400)
+        record_check.fine = overdue * 10
     db.commit()
     db.refresh(record_check)
     return record_check

@@ -30,6 +30,11 @@ class MemberResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class MemberPublic(BaseModel):
+    id: int
+    name: str
+
+
 class BorrowRequest(BaseModel):
     book_id: int
     member_id: int
@@ -42,5 +47,7 @@ class BorrowResponse(BaseModel):
     borrowed_at: datetime
     returned_at: datetime | None
     book: BookResponse
-    member: MemberResponse
+    member: MemberPublic
+    due_date: datetime
+    fine: int
     model_config = ConfigDict(from_attributes=True)

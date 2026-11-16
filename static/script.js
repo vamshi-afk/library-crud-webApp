@@ -137,7 +137,7 @@ async function fetchLoans() {
       <tr>
         <td>${record.id}</td>
         <td><strong>${record.book.title}</strong> <small class="text-muted">(#${record.book_id})</small></td>
-        <td>${record.member.name} <small class="text-muted">(${record.member.email})</small></td>
+        <td>${record.member.name} </td>
         <td>${borrowedDate}</td>
         <td>${actionCell}</td>
       </tr>
