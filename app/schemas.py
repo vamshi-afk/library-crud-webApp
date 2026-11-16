@@ -33,6 +33,7 @@ class MemberResponse(BaseModel):
 class MemberPublic(BaseModel):
     id: int
     name: str
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BorrowRequest(BaseModel):

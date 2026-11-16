@@ -10,11 +10,14 @@ router = APIRouter(prefix="/books", tags=["Books"])
 
 
 @router.get("/", response_model=list[BookResponse])
-def renderBooks(search: str, db: DbSession):
+def renderBooks(db: DbSession, search: str | None = None):
     stmt = select(Book).order_by(Book.id)
     if search:
         stmt = stmt.where(
-            or_(Book.title.ilike(f"%{search}%"), Book.author.ilike(f"%{search}%"))
+            or_(
+                Book.title.icontains(search, autoescape=True),
+                Book.author.icontains(search, autoescape=True),
+            )
         )
     return db.scalars(stmt).all()
 

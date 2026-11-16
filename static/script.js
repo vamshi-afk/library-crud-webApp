@@ -1,12 +1,18 @@
 // ==================== BOOKS ====================
-async function fetchBooks() {
-  const res = await fetch('/books/');
+async function fetchBooks(search = '') {
+  const url = search ? `/books/?search=${encodeURIComponent(search)}` : '/books/';
+  const res = await fetch(url);
+  if (!res.ok) return;
   const data = await res.json();
 
   const tbody = document.getElementById('booksTableBody');
   const bookSelect = document.getElementById('borrowBookSelect');
   tbody.innerHTML = '';
-  bookSelect.innerHTML = '<option value="" disabled selected>Choose a book...</option>';
+
+  // Only reset the Borrow dropdown when loading the full catalog
+  if (!search) {
+    bookSelect.innerHTML = '<option value="" disabled selected>Choose a book...</option>';
+  }
 
   data.forEach(book => {
     tbody.innerHTML += `
@@ -21,13 +27,24 @@ async function fetchBooks() {
       </tr>
     `;
 
-    bookSelect.innerHTML += `
-      <option value="${book.id}" ${book.available_copies === 0 ? 'disabled' : ''}>
-        #${book.id} - ${book.title} (${book.available_copies} avail)
-      </option>
-    `;
+    if (!search) {
+      bookSelect.innerHTML += `
+        <option value="${book.id}" ${book.available_copies === 0 ? 'disabled' : ''}>
+          #${book.id} - ${book.title} (${book.available_copies} avail)
+        </option>
+      `;
+    }
   });
 }
+
+let searchTimeout;
+document.getElementById('bookSearchInput').addEventListener('input', (e) => {
+  clearTimeout(searchTimeout);
+  const query = e.target.value.trim();
+  searchTimeout = setTimeout(() => {
+    fetchBooks(query);
+  }, 250);
+});
 
 async function deleteBook(id) {
   const res = await fetch(`/books/${id}`, { method: 'DELETE' });
@@ -64,6 +81,7 @@ document.getElementById('bookForm').addEventListener('submit', async (e) => {
 // ==================== MEMBERS ====================
 async function fetchMembers() {
   const res = await fetch('/members/');
+  if (!res.ok) return;
   const data = await res.json();
 
   const tbody = document.getElementById('membersTableBody');
@@ -84,7 +102,7 @@ async function fetchMembers() {
     `;
 
     memberSelect.innerHTML += `
-      <option value="${member.id}">#${member.id} - ${member.name} (${member.email})</option>
+      <option value="${member.id}">#${member.id} - ${member.name}</option>
     `;
   });
 }
@@ -122,13 +140,18 @@ document.getElementById('memberForm').addEventListener('submit', async (e) => {
 // ==================== BORROW & LOANS ====================
 async function fetchLoans() {
   const res = await fetch('/borrow/');
+  if (!res.ok) return;
   const data = await res.json();
 
   const tbody = document.getElementById('loansTableBody');
   tbody.innerHTML = '';
 
   data.forEach(record => {
-    const borrowedDate = new Date(record.borrowed_at).toLocaleString();
+    const borrowedDate = new Date(record.borrowed_at).toLocaleDateString();
+    const dueDate = new Date(record.due_date).toLocaleDateString();
+    const fineBadge = record.fine > 0
+      ? `<span class="badge bg-danger">₹${record.fine}</span>`
+      : `<span class="text-muted">₹0</span>`;
     const actionCell = record.returned_at
       ? `<span class="badge bg-secondary">Returned (${new Date(record.returned_at).toLocaleDateString()})</span>`
       : `<button onclick="returnBook(${record.id})" class="btn btn-sm btn-warning">Return Book</button>`;
@@ -137,8 +160,9 @@ async function fetchLoans() {
       <tr>
         <td>${record.id}</td>
         <td><strong>${record.book.title}</strong> <small class="text-muted">(#${record.book_id})</small></td>
-        <td>${record.member.name} </td>
-        <td>${borrowedDate}</td>
+        <td>${record.member.name}</td>
+        <td><small>Out: ${borrowedDate}<br>Due: ${dueDate}</small></td>
+        <td>${fineBadge}</td>
         <td>${actionCell}</td>
       </tr>
     `;
@@ -179,3 +203,10 @@ document.getElementById('borrowForm').addEventListener('submit', async (e) => {
 fetchBooks();
 fetchMembers();
 fetchLoans();
+
+document.getElementById('themeToggle').addEventListener('click', (e) => {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-bs-theme') === 'dark';
+  html.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
+  e.target.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+});
