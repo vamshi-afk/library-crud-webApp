@@ -4,7 +4,7 @@ A full-stack Library Management System built with **FastAPI**, **SQLAlchemy 2.0*
 
 ## Features
 
-- **Book Catalog Management:** Add books with copy tracking (`total_copies` vs. `available_copies`), case-insensitive search (`ILIKE`) across titles and authors, and protected deletion.
+- **Book Catalog Management:** Add books with copy tracking (`total_copies` vs. `available_copies`), case-insensitive dynamic search (`ILIKE` with wildcard escaping) across titles and authors, and protected deletion.
 - **Member Registry:** Register library members with unique email enforcement and active-loan deletion guards.
 - **Checkout & Return Lifecycle:**
   - Enforces copy availability and prevents duplicate active checkouts by the same member.
@@ -19,7 +19,7 @@ A full-stack Library Management System built with **FastAPI**, **SQLAlchemy 2.0*
 - **Backend:** Python 3.14, FastAPI, Uvicorn
 - **ORM & Database:** SQLAlchemy 2.0, PostgreSQL (`psycopg` v3)
 - **Validation & Serialization:** Pydantic v2
-- **Frontend:** Jinja2 Templates, Vanilla JavaScript (`fetch`), Bootstrap 5
+- **Frontend:** Jinja2 Templates, Vanilla JavaScript (`fetch`), Bootstrap 5.3 *(AI-generated single-page UI with dark mode support built to test and demonstrate the REST API)*
 - **Tooling:** `uv` (package & lockfile management), Ruff (linting & import sorting)
 
 ## Project Structure
@@ -37,9 +37,9 @@ A full-stack Library Management System built with **FastAPI**, **SQLAlchemy 2.0*
 │       ├── members.py     # Member registration, uniqueness checks, and deletion guards
 │       └── borrow.py      # Checkout/return transactions, joinedload queries, and fine math
 ├── static/
-│   └── script.js          # Frontend API integration
+│   └── script.js          # AI-generated frontend API integration & debounced search
 ├── templates/
-│   └── index.html         # Single-page Bootstrap dashboard
+│   └── index.html         # AI-generated single-page Bootstrap dashboard
 ├── pyproject.toml         # Project metadata and direct dependencies
 └── uv.lock                # Cross-platform deterministic dependency lockfile
 ```
